@@ -1,8 +1,9 @@
 import React from "react";
+import { Outlet } from "react-router-dom";
 
-const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-full max-w-md p-8 bg-white rounded shadow">{children}</div>
+const AuthLayout = () => (
+  <div className="h-screen bg-red-500">
+    <Outlet/>
   </div>
 );
 

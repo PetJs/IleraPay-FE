@@ -16,7 +16,6 @@ import { AuthService } from "@/services/auth-service";
 import useUserStore from "@/store/user-store";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useMemo } from "react";
 import { AxiosError } from "axios";
 import type { ApiResponse } from "@/lib/types";
 
@@ -25,33 +24,19 @@ const signInSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-
 export default function SignIn() {
   const navigate = useNavigate();
-  const { setUser, currentRole, setCurrentRole, setTokens } = useUserStore();
-
-  const isAdmin = useMemo(() => currentRole === "admin", [currentRole]);
-
-  console.log("Current Role before login:", currentRole);
+  const { updateUser, setTokens, reset } = useUserStore();
 
   const loginMutation = useMutation({
     mutationFn: async (values: { email: string; password: string }) => {
-      return isAdmin ? AuthService.loginAdmin(values) : AuthService.loginUser(values);
+      return AuthService.loginUser(values);
     },
     onSuccess: (resp) => {
-      console.log("Login Response:", resp.data);
-      // Default to 'user' because the response doesn't include a role
-      const userRole = resp.data.user.role || currentRole  || "user";
-      setUser({ user: resp.data.user });
-      setCurrentRole(userRole);
+      updateUser(resp.data.user);
       setTokens(resp.data.token, "");
       toast.success("Woo hoo signed in");
-
-      console.log("User Role after login:", userRole);
-      
-      // Navigate to the appropriate dashboard based on the role
-      navigate(userRole === "admin" ? "/admin/dashboard" : "/users/dashboard");
-
+      navigate("/users/dashboard");
     },
     onError: (err) => {
       console.error(err);
@@ -59,6 +44,7 @@ export default function SignIn() {
         ((err as AxiosError).response?.data as ApiResponse<null>)?.message ||
         "Sign in Error";
       toast.error(errorMessage);
+      reset();
     },
   });
 
@@ -71,25 +57,10 @@ export default function SignIn() {
     loginMutation.mutate(values);
   };
 
-  const toggleRole = () => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
-    setCurrentRole(newRole);
-    localStorage.setItem("currentRole", newRole);
-    console.log("New Role:", newRole);
-  };
-
-  console.log("Current Role in Store:", currentRole);
-
   return (
-    <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-md p-6">
-      <Button
-        onClick={toggleRole}
-        className="w-full mt-3 bg-gray-600 text-white py-2 mb-1"
-      >
-        {isAdmin ? "Sign in as User" : "Sign in as Admin"}
-      </Button>
+    <div className="w-full z-20 max-w-[400px] bg-white rounded-2xl shadow-md">
       <h1 className="text-xl font-bold text-gray-700 text-center mb-6">
-        Thrift Management {isAdmin ? "Admin" : "User"}
+        Thrift Management Sign In
       </h1>
 
       <Form {...form}>
