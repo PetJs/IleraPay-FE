@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import type { ApiResponse } from "@/lib/types";
 
+
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -33,8 +34,9 @@ export default function SignIn() {
       return AuthService.loginUser(values);
     },
     onSuccess: (resp) => {
-      updateUser(resp.data.user);
-      setTokens(resp.data.token, "");
+      console.log(resp)
+      //updateUser(resp.data.user);
+      setTokens(resp.token!, "");
       toast.success("Woo hoo signed in");
       navigate("/users/dashboard");
     },
@@ -58,9 +60,9 @@ export default function SignIn() {
   };
 
   return (
-    <div className="w-full z-20 max-w-[400px] bg-white rounded-2xl shadow-md">
+    <div className="w-full overflow-y-auto p-4 bg-white rounded-t-2xl shadow-md">
       <h1 className="text-xl font-bold text-gray-700 text-center mb-6">
-        Thrift Management Sign In
+        Ilera-Pay
       </h1>
 
       <Form {...form}>
@@ -75,10 +77,11 @@ export default function SignIn() {
                   <Input
                     type="email"
                     placeholder="Enter your email"
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-4 rounded-lg"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-600" />
               </FormItem>
             )}
           />
@@ -93,17 +96,33 @@ export default function SignIn() {
                   <Input
                     type="password"
                     placeholder="Enter your password"
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 py-4 rounded-lg"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-600" />
               </FormItem>
             )}
           />
 
+          <div className="flex justify-between items-center mt-4 mb-6">
+            <div className="flex items-center justify-center gap-2">
+              <input type="checkbox" name="Remember me" id="remember-me" className="w-4 h-4 accent-blue-700"/> 
+              <label htmlFor="remember-me" className="text-sm text-gray-600">
+                Remember me
+              </label>
+            </div>
+            
+
+            <Link to="/forget-password" className="text-blue-600 hover:underline">
+              Forgot Password?
+            </Link>
+
+          </div>
+
           <Button
             type="submit"
-            className="w-full bg-[#2341AA] text-white py-2"
+            className="w-full bg-[#2341AA] text-white py-6 text-lg rounded-lg"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? "Signing in..." : "Sign in"}
@@ -118,10 +137,6 @@ export default function SignIn() {
             Sign up
           </Link>{" "}
         </p>
-        Forgot your password?{" "}
-        <Link to="/reset-password" className="text-blue-600 hover:underline">
-          Reset Password
-        </Link>
       </div>
     </div>
   );
