@@ -9,6 +9,7 @@ export interface UserStore {
   accessToken: string | null;
   refreshToken: string | null;
   authorized: boolean;
+  setUser: (data: { user: User }) => void;
   updateUser: (user: User) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   reset: () => void;
