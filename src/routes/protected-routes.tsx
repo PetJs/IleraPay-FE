@@ -10,7 +10,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
 }) => {
   if (!isAuthorized) {
-    return <Navigate to="/signin" replace />;
+    return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 };

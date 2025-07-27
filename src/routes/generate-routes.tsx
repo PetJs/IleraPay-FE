@@ -10,37 +10,31 @@ type RouteConfig = {
   element?: React.ComponentType<any>;
   title?: string;
   routes?: RouteConfig[]; // Nested routes
-  requiredRole?: string;
 };
 
 type LayoutConfig = {
   layout: React.ComponentType<any>;
   routes: RouteConfig[];
+  path?: string;
 };
 
 const renderRoutes = (
   routes: RouteConfig[],
   parentLayout?: React.ComponentType<any>,
   isAuthorized = true,
-  userRole = "admin",
-  parentRequiredRole?: string  // New parameter to carry down parent's requiredRole
 ) => {
   return routes.map(
-    ({ element: Element, path, routes: nestedRoutes, name, requiredRole }, index) => {
+    ({ element: Element, path, routes: nestedRoutes, name }, index) => {
       if (!Element || !path) return null;
-
-      // If a nested route doesn't have its own requiredRole, inherit from the parent
-      const effectiveRequiredRole = requiredRole || parentRequiredRole;
 
       // Check if route needs protection
       const needsProtection = parentLayout === DashboardLayout;
-      const hasRequiredRole = !effectiveRequiredRole || effectiveRequiredRole === userRole;
-      const isAccessible = isAuthorized && (!needsProtection || hasRequiredRole);
+      const isAccessible = isAuthorized && (!needsProtection );
 
       if (nestedRoutes && nestedRoutes.length > 0) {
         return (
           <Route key={`${path}-${index}`} path={path} element={<Element />}>
-            {renderRoutes(nestedRoutes, parentLayout, isAuthorized, userRole, effectiveRequiredRole)}
+            {renderRoutes(nestedRoutes, parentLayout, isAuthorized)}
           </Route>
         );
       }
@@ -76,7 +70,7 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
       <ReactRoutes>
         {mainRoutes.map(({ layout: Layout, routes }, index) => (
           <Route key={`layout-${index}`} element={<Layout />}>
-            {renderRoutes(routes, Layout, isAuthorized, undefined)}
+            {renderRoutes(routes, Layout, isAuthorized)}
           </Route>
         ))}
 
@@ -84,7 +78,7 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
           path="/"
           element={
             !isAuthorized  ? (
-              <Navigate to="/signIn" replace />
+              <Navigate to="/" replace />
             ) :  (
               <Navigate to="/users" replace />
             )
@@ -111,7 +105,7 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
           }
         />
 
-        <Route path="*" element={<Navigate to="/signIn" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </ReactRoutes>
     );
   };
