@@ -1,16 +1,11 @@
 import { Navigate } from "react-router-dom";
+import useUserStore from "@/store/user-store";
 
-type ProtectedRouteProps = {
-  isAuthorized: boolean;
-  children?: React.ReactNode;
-};
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthorized = useUserStore((s) => s.authorized);
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  isAuthorized,
-  children,
-}) => {
   if (!isAuthorized) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/signin" replace />;
   }
   return <>{children}</>;
 };

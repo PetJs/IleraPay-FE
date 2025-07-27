@@ -29,7 +29,6 @@ const renderRoutes = (
 
       // Check if route needs protection
       const needsProtection = parentLayout === DashboardLayout;
-      const isAccessible = isAuthorized && (!needsProtection );
 
       if (nestedRoutes && nestedRoutes.length > 0) {
         return (
@@ -45,9 +44,7 @@ const renderRoutes = (
           path={path}
           element={
             needsProtection ? (
-              <ProtectedRoute
-                isAuthorized={isAccessible}
-              >
+              <ProtectedRoute>
                 <Element />
               </ProtectedRoute>
             ) : (
@@ -68,19 +65,23 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
 
     return (
       <ReactRoutes>
-        {mainRoutes.map(({ layout: Layout, routes }, index) => (
-          <Route key={`layout-${index}`} element={<Layout />}>
-            {renderRoutes(routes, Layout, isAuthorized)}
-          </Route>
-        ))}
+        {mainRoutes.map(({ layout: Layout, path: layoutPath, routes }, idx) => (
+        <Route
+          key={idx}
+          path={layoutPath}        // ← bind this layout to its URL prefix
+          element={<Layout />}
+        >
+          {renderRoutes(routes, Layout, isAuthorized)}
+        </Route>
+      ))}
 
         <Route
           path="/"
           element={
             !isAuthorized  ? (
-              <Navigate to="/" replace />
+              <Navigate to="/signin" replace />
             ) :  (
-              <Navigate to="/users" replace />
+              <Navigate to="/user" replace />
             )
           }
         />
@@ -89,7 +90,7 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
         <Route
           path="/admin/*"
           element={
-            <ProtectedRoute isAuthorized={isAuthorized} >
+            <ProtectedRoute  >
               <Outlet />
             </ProtectedRoute>
           }
@@ -99,7 +100,7 @@ export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
         <Route
           path="/users/*"
           element={
-            <ProtectedRoute isAuthorized={isAuthorized}>
+            <ProtectedRoute >
               <Outlet />
             </ProtectedRoute>
           }

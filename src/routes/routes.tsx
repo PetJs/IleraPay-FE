@@ -1,5 +1,4 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
 import { generateRoutes } from "./generate-routes";
 import AuthLayout from "@/layouts/authLayout";
 import DashboardLayout from "@/layouts/dashboardLayout";
@@ -9,34 +8,30 @@ import Dashboard from "@/pages/user/dashboard";
 import ProtectedRoute from "./protected-routes";
 import WelcomeBack from "@/pages/auth/welcomeBackPage";
 
-// Define wrappers as component types (not JSX elements)
-const UsersRoutes: React.FC = () => <Outlet />;
-const ProtectedDashboard: React.FC = () => (
-  <ProtectedRoute isAuthorized={!!localStorage.getItem("userStore")}>   
-    <Dashboard />
-  </ProtectedRoute>
-);
+const ProtectedDashboard: React.FC = () => {
+  console.log("Protected Dashboard Rendered");
+  return (
+    <ProtectedRoute >
+      <Dashboard />
+    </ProtectedRoute>
+  );
+};
 
 export const Routes = generateRoutes([
     {
         layout: AuthLayout,
+        path: "/",
         routes: [
         {
             name: "Welcome Back",
             title: "Welcome Back",
-            path: "/",
-            element: WelcomeBack, 
-        },
-        {
-            name: "Sign In",
-            title: "Sign In",
-            path: "/signin",
-            element: SignIn,             // pass component type
+            path: "signin",
+            element: SignIn, 
         },
         {
             name: "Sign Up",
             title: "Sign Up",
-            path: "/signup",
+            path: "signup",
             element: SignUpPage,
         },
         {
@@ -48,22 +43,16 @@ export const Routes = generateRoutes([
         ],
     },
     {
+        path: "/user",
         layout: DashboardLayout,
         routes: [
-        {
-            name: "Users",
-            title: "Users",
-            path: "/users",
-            element: UsersRoutes,
-            routes: [
+
             {
                 name: "User Dashboard",
                 title: "User Dashboard",
                 path: "dashboard",
                 element: ProtectedDashboard,
             },
-            ],
-        },
         ],
     },
 ]);
