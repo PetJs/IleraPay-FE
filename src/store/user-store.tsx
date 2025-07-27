@@ -37,7 +37,7 @@ const useUserStore = create<UserStore>(
         }),
       updateUser: (user) => set({ user }),
       setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
+        set({ accessToken, refreshToken, authorized: true }),
       reset: () =>
         set({
           user: null,

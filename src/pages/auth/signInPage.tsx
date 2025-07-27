@@ -27,7 +27,7 @@ const signInSchema = z.object({
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { updateUser, setTokens, reset } = useUserStore();
+  const {  setTokens, reset } = useUserStore();
 
   const loginMutation = useMutation({
     mutationFn: async (values: { email: string; password: string }) => {
@@ -35,10 +35,10 @@ export default function SignIn() {
     },
     onSuccess: (resp) => {
       console.log(resp)
-      //updateUser(resp.data.user);
+      // setUser({ user: resp.data.user }); // This sets authorized: true
       setTokens(resp.token!, "");
       toast.success("Woo hoo signed in");
-      navigate("/users/dashboard");
+      navigate("/user/dashboard");
     },
     onError: (err) => {
       console.error(err);
