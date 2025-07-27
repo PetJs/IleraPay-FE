@@ -1,8 +1,7 @@
-import React from "react";
 import { Outlet } from "react-router-dom";
 
 const AuthLayout = () => (
-  <div className="h-screen bg-red-500">
+  <div className="h-screen bg-red-500 flex  justify-end pt-32">
     <Outlet/>
   </div>
 );
