@@ -2,18 +2,18 @@ export type ApiResponse<T> = {
   status_code: number;
   message: string;
   data: T;
+  token?: string;
 };
 
 export type User = {
   id: number;
   last_login: string;
   email: string;
-  name: string;
+  firstname: string;
+  lastname: string;
   phone: string;
   address: string;
   date_created: Date;
-  contribution_amount: number;
-  group?: number;
   avatar?: string;
 };
 
