@@ -26,3 +26,12 @@ export type AuthUser = {
   user: User;
   token: string;
 };
+
+export interface CardComponentProps {
+  title?: string;
+  openIcon?: React.ReactNode;
+  description?: string;
+  icon?: React.ReactNode;
+  bgColor?: string;
+  onClick?: () => void;
+}
