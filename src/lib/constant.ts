@@ -1,4 +1,5 @@
 const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
+
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_APP_PAYSTACK_PUBLIC_KEY;
 const PAYSTACK_SECRET_KEY = import.meta.env.VITE_APP_PAYSTACK_SECRET_KEY;
 
