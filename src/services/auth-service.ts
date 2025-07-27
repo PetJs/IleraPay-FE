@@ -17,7 +17,7 @@ export class AuthService {
 
   static async loginUser(req: AuthCredentials): Promise<ApiResponse<AuthUser>> {
     try {
-      const response = await publicApi.post("/users/login/", req);
+      const response = await publicApi.post("login/", req);
       return response.data;
     } catch (error) {
       console.error("Error logging in:", error);
