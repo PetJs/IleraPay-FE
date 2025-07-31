@@ -35,3 +35,14 @@ export interface CardComponentProps {
   bgColor?: string;
   onClick?: () => void;
 }
+
+export type Transaction = {
+  date: string;
+  tag: "in" | "out";
+  amount: number;
+  title: string;
+};
+
+export interface TransactionListProps {
+  data: Transaction[];
+}
