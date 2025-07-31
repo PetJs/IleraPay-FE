@@ -6,16 +6,18 @@ import useUserStore from "@/store/user-store";
 
 type RouteConfig = {
   name?: string;
-  path: string;
+  path?: string;
+  index?: boolean;
   element?: React.ComponentType<any>;
   title?: string;
-  routes?: RouteConfig[]; // Nested routes
+  routes?: RouteConfig[];
 };
 
 type LayoutConfig = {
   layout: React.ComponentType<any>;
   routes: RouteConfig[];
   path?: string;
+  protected?: boolean;
 };
 
 const renderRoutes = (
@@ -24,86 +26,73 @@ const renderRoutes = (
   isAuthorized = true,
 ) => {
   return routes.map(
-    ({ element: Element, path, routes: nestedRoutes, name }, index) => {
-      if (!Element || !path) return null;
+    (routeConfig, idx) => {
+      const { element: Element, path, index, routes: nested, title, name } = routeConfig;
+      if (!Element && !(nested && nested.length)) return null;
 
-      // Check if route needs protection
+      // Determine protection
       const needsProtection = parentLayout === DashboardLayout;
+      const elementNode = Element ? (
+        needsProtection ? <ProtectedRoute><Element /></ProtectedRoute> : <Element />
+      ) : undefined;
 
-      if (nestedRoutes && nestedRoutes.length > 0) {
+      // Build route props
+      const routeProps: any = {};
+      if (index) routeProps.index = true;
+      else if (path) routeProps.path = path;
+      if (title) routeProps.handle = { title };
+
+      // Render nested or leaf
+      if (nested && nested.length) {
         return (
-          <Route key={`${path}-${index}`} path={path} element={<Element />}>
-            {renderRoutes(nestedRoutes, parentLayout, isAuthorized)}
+          <Route key={idx} element={elementNode} {...routeProps}>
+            {renderRoutes(nested, parentLayout, isAuthorized)}
           </Route>
         );
       }
 
       return (
         <Route
-          key={name || `route-${index}`}
-          path={path}
-          element={
-            needsProtection ? (
-              <ProtectedRoute>
-                <Element />
-              </ProtectedRoute>
-            ) : (
-              <Element />
-            )
-          }
+          key={name || idx}
+          element={elementNode}
+          {...routeProps}
         />
       );
     }
   );
 };
 
-
 export const generateRoutes = (mainRoutes: LayoutConfig[]) => {
   const Routes = () => {
-    const { authorized: isAuthorized } = useUserStore();
-    console.log("Authorized:", isAuthorized);
+    const { authorized } = useUserStore();
 
     return (
       <ReactRoutes>
-        {mainRoutes.map(({ layout: Layout, path: layoutPath, routes }, idx) => (
-        <Route
-          key={idx}
-          path={layoutPath}        // ← bind this layout to its URL prefix
-          element={<Layout />}
-        >
-          {renderRoutes(routes, Layout, isAuthorized)}
-        </Route>
-      ))}
+        {mainRoutes.map(({ layout: Layout, path, protected: gate, routes }, idx) => (
+          <Route
+            key={idx}
+            path={path}
+            element={gate ? <ProtectedRoute><Layout /></ProtectedRoute> : <Layout />}
+          >
+            {renderRoutes(routes, Layout, authorized)}
+          </Route>
+        ))}
 
         <Route
           path="/"
           element={
-            !isAuthorized  ? (
-              <Navigate to="/signin" replace />
-            ) :  (
-              <Navigate to="/user" replace />
-            )
+            !authorized ? <Navigate to="/" replace /> : <Navigate to="/user/dashboard" replace />
           }
         />
 
-        {/* Restrict admin routes */}
         <Route
           path="/admin/*"
-          element={
-            <ProtectedRoute  >
-              <Outlet />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><Outlet /></ProtectedRoute>}
         />
 
-        {/* Restrict user routes */}
         <Route
           path="/users/*"
-          element={
-            <ProtectedRoute >
-              <Outlet />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><Outlet /></ProtectedRoute>}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

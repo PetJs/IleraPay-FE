@@ -5,7 +5,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const isAuthorized = useUserStore((s) => s.authorized);
 
   if (!isAuthorized) {
-    return <Navigate to="/signin" replace />;
+    return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 };
