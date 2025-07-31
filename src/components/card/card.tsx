@@ -9,10 +9,10 @@ const CardComponent: React.FC<CardComponentProps> = ({title, icon, openIcon, des
                 {openIcon && <div className=" flex justify-center items-center">{openIcon}</div>}
             </div>
             
-            <p className="mb-2">{description}</p>
+            <p className="mb-2 text-xl font-extrabold">{description}</p>
             
             <div className="">
-                {title && <h2>{title}</h2>}
+                {title && <h2 className="text-lg font-bold">{title}</h2>}
                 {onClick && <div className=""><Button onClick={onClick} className="flex items-center  w-full rounded-4xl bg-[#F28500]"><span className="text-white text-center">View</span></Button> </div>}
             </div>
         </div>
