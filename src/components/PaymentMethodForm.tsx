@@ -21,7 +21,7 @@ interface PaymentMethodFormProps {
   isValid: boolean;
 }
 
-export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMethodFormProps) {
+export function PaymentMethodForm({ onPaymentDataChange, isValid=true }: PaymentMethodFormProps) {
   const [paymentData, setPaymentData] = useState<PaymentData>({
     method: 'card',
     cardNumber: '',
@@ -246,7 +246,7 @@ export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMetho
             </div>
             
             {!paymentData.bankTransferCompleted ? (
-              <Button onClick={handleBankTransferComplete} variant="outline" className="w-full text-white bg-purple-500">
+              <Button onClick={handleBankTransferComplete} variant="outline" className="w-full text-white bg-purple-500" disabled={!isValid}>
                 I Have Paid
               </Button>
             ) : (
