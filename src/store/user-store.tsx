@@ -1,4 +1,4 @@
-import type { Plan, User } from "@/lib/types";
+import type { Plan, RememberedCard, User } from "@/lib/types";
 import type { StateCreator } from "zustand";
 import { create } from "zustand";
 import type { PersistOptions } from "zustand/middleware";
@@ -10,10 +10,13 @@ export interface UserStore {
   refreshToken: string | null;
   authorized: boolean;
   selectedPlan: Plan | null;
+  rememberedCard?: RememberedCard | null;
   setUser: (data: { user: User }) => void;
   updateUser: (user: User) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setSelectedPlan: (plan: Plan) => void;
+  setRememberedCard: (card: RememberedCard | null) => void;
+
   reset: () => void;
 }
 
@@ -33,6 +36,8 @@ const useUserStore = create<UserStore>(
       loading: false,
       authorized: false,
       selectedPlan: null,
+      rememberedCard: null,
+      setRememberedCard: (card: RememberedCard | null) => set({ rememberedCard: card }),
       setUser: ({ user }: { user: User }) =>
         set({
           user,
@@ -51,7 +56,9 @@ const useUserStore = create<UserStore>(
           refreshToken: null,
           authorized: false,
           selectedPlan: null,
+          rememberedCard: null,
         }),
+      
     }),
     { name: "userStore" }
   )

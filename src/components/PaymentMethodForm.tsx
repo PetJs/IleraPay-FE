@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import MC from "../assets/images/mc_symbol.svg"
 import type { PaymentData } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
+import useUserStore from "@/store/user-store";
+
 
 
 
@@ -19,7 +21,7 @@ interface PaymentMethodFormProps {
   isValid: boolean;
 }
 
-export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMethodFormProps) {
+export function PaymentMethodForm({ onPaymentDataChange, isValid=true }: PaymentMethodFormProps) {
   const [paymentData, setPaymentData] = useState<PaymentData>({
     method: 'card',
     cardNumber: '',
@@ -31,6 +33,8 @@ export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMetho
   });
 
   const navigate = useNavigate();
+  const { setRememberedCard } = useUserStore();
+
 
   const handleInputChange = (field: keyof PaymentData, value: string | boolean) => {
     const newData = { ...paymentData, [field]: value };
@@ -174,7 +178,18 @@ export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMetho
               <Checkbox
                 id="rememberCard"
                 checked={paymentData.rememberCard}
-                onCheckedChange={(checked: boolean) => handleInputChange('rememberCard', checked as boolean)}
+                onCheckedChange={(checked: boolean) => {
+                  handleInputChange('rememberCard', checked as boolean);
+                  if (checked) {
+                    setRememberedCard({
+                      cardNumber: paymentData.cardNumber,
+                      cardholderName: paymentData.cardholderName,
+                      expiryDate: paymentData.expiryDate,
+                    });
+                  } else {
+                    setRememberedCard(null);
+                  }
+                }}
               />
               <Label htmlFor="rememberCard" className="text-sm">
                 Remember this card
@@ -231,7 +246,7 @@ export function PaymentMethodForm({ onPaymentDataChange, isValid }: PaymentMetho
             </div>
             
             {!paymentData.bankTransferCompleted ? (
-              <Button onClick={handleBankTransferComplete} variant="outline" className="w-full text-white bg-purple-500">
+              <Button onClick={handleBankTransferComplete} variant="outline" className="w-full text-white bg-purple-500" disabled={!isValid}>
                 I Have Paid
               </Button>
             ) : (

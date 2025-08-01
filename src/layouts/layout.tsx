@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { User } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
@@ -25,7 +25,7 @@ const Layout = () => {
           <ChevronLeft/>
         </div>
         <h1>{title}</h1>
-        <div><User className="w-8 h-8 text-gray-700" fill="blue" stroke="" /></div>
+        <div><Link to="/users/profile"><User className="w-8 h-8 text-gray-700" fill="blue" stroke="" /></Link></div>
       </header>
       <Outlet />
 
