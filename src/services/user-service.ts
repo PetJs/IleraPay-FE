@@ -1,5 +1,5 @@
 import { publicApi } from "@/lib/axios";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
 export class UserService {
 
@@ -8,9 +8,9 @@ export class UserService {
     console.log("Message:", message);
     
     try {
-      const { data } = await publicApi.post("/chat/", { message });
+      const { data } = await axios.post("/api/chat/", { message });
       console.log("Chat API response:", data);
-      return data;
+      return { response: data.reply };
     } catch (error) {
       console.error("=== CHAT MESSAGE ERROR ===");
       console.error("Error sending chat message:", error);
