@@ -1,4 +1,5 @@
 import { publicApi } from "@/lib/axios";
+import useUserStore from "@/store/user-store";
 import { AxiosError } from "axios";
 
 export class UserService {
@@ -129,6 +130,33 @@ export class UserService {
       throw error as AxiosError;
     }
   }
+
+
+  // ... other methods ...
+
+  static async logout(): Promise<void> {
+    console.log("=== LOGGING OUT ===");
+    try {
+      // Optionally inform backend
+      await publicApi.post("/logout"); // <- if your API supports logout
+      console.log("Backend logout successful");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error("Logout API error:", error.response?.data || error.message);
+      } else {
+        console.error("Unexpected logout error:", error);
+      }
+      // Continue with local logout even if backend fails
+    }
+
+    // Clear user session in frontend store
+    const logoutFn = useUserStore.getState().reset;
+    logoutFn();
+    console.log("User store cleared");
+  }
+
+
+
 
   static async validateReceipt(data: {
     hospitalName: string;
