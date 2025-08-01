@@ -6,6 +6,7 @@ import {
   CreditCard as BillingIcon,
   Bot as BotIcon,
   ClipboardList as ClaimsIcon,
+  Shield as InsuranceIcon
 } from "lucide-react";
 
 const tabs = [
@@ -13,6 +14,7 @@ const tabs = [
   { to: "/users/wallet",   label: "Wallet",   Icon: BillingIcon   },
   { to: "/users/chatbot",    label: "ChatBot", Icon: BotIcon   },
   { to: "/users/claim",    label: "Claims",    Icon: ClaimsIcon    },
+  { to: "/users/plans",    label: "Claims",    Icon: InsuranceIcon    },
 ];
 
 const BottomNav: React.FC = () => (
