@@ -14,7 +14,7 @@ const tabs = [
   { to: "/users/wallet",   label: "Wallet",   Icon: BillingIcon   },
   { to: "/users/chatbot",    label: "ChatBot", Icon: BotIcon   },
   { to: "/users/claim",    label: "Claims",    Icon: ClaimsIcon    },
-  { to: "/users/plans",    label: "Claims",    Icon: InsuranceIcon    },
+  { to: "/users/plans",    label: "Plans",    Icon: InsuranceIcon    },
 ];
 
 const BottomNav: React.FC = () => (

@@ -11,6 +11,7 @@ import Layout from "@/layouts/layout";
 import ChatBotPage from "@/pages/user/chatBot";
 import ClaimPage from "@/pages/user/claimPage";
 import InsurancePage from "@/pages/user/PlanSelectionPage";
+import ProfilePage from "@/pages/user/ProfilePage";
 
 const ProtectedDashboard: React.FC = () => {
   console.log("Protected Dashboard Rendered");
@@ -87,6 +88,12 @@ export const Routes = generateRoutes([
                 title: "Plans",
                 path: "plans",
                 element: InsurancePage,
+            },
+            {
+                name: "Profile",
+                title: "Profile",
+                path: "profile",
+                element: ProfilePage,
             }
         ]
     }

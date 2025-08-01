@@ -79,3 +79,9 @@ export interface PlanCardProps {
   isSelected: boolean;
   onSelect: (planId: string) => void;
 }
+
+export interface RememberedCard {
+  cardNumber: string;
+  cardholderName: string;
+  expiryDate: string;
+}
