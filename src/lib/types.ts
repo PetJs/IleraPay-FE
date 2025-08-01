@@ -46,3 +46,36 @@ export type Transaction = {
 export interface TransactionListProps {
   data: Transaction[];
 }
+
+export interface PaymentData {
+  method: 'card' | 'bank';
+  cardNumber: string;
+  cardholderName: string;
+  expiryDate: string;
+  cvv: string;
+  rememberCard: boolean;
+  bankTransferCompleted: boolean;
+}
+
+
+interface PlanFeature {
+  text: string;
+  included: boolean;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  features: PlanFeature[];
+  popular?: boolean;
+  startDate?: string;
+}
+
+
+export interface PlanCardProps {
+  plan: Plan;
+  isSelected: boolean;
+  onSelect: (planId: string) => void;
+}
