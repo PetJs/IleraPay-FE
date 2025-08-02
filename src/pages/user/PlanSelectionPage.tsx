@@ -9,22 +9,15 @@ import { toast } from "sonner";
 import type { PaymentData, Plan } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/store/user-store";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { UserService } from "@/services/user-service";
+import { mockPlans } from "@/mock/mock"; // ✅ Use mock data
 
 export default function InsurancePage() {
   const navigate = useNavigate();
   const { setSelectedPlan } = useUserStore();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["insurancePlans"],
-    queryFn: async () => {
-      const res = await UserService.getAllInsurancePlans();
-      return res.data as Plan[]; // 👈 explicitly cast to Plan[]
-    }
-  });
-
-  const insurancePlans = data || [];
+  const insurancePlans: Plan[] = mockPlans; // ✅ Use mock data directly
 
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [paymentData, setPaymentData] = useState<PaymentData>({
@@ -56,8 +49,8 @@ export default function InsurancePage() {
   const isFormValid = (): boolean => selectedPlanId !== '' && isPaymentValid();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => UserService.subscribeToPlan({ planId: selectedPlanId, payment: paymentData }),
- // ✅ backend expects just a planId string
+    mutationFn: () =>
+      UserService.subscribeToPlan({ planId: selectedPlanId, payment: paymentData }),
     onSuccess: () => {
       if (selectedPlan) {
         setSelectedPlan({ ...selectedPlan, startDate: new Date().toISOString() });
@@ -85,15 +78,12 @@ export default function InsurancePage() {
       expiryDate: '',
       cvv: '',
       rememberCard: false,
-      bankTransferCompleted: false
+      bankTransferCompleted: false,
     });
     setIsSubscribed(false);
   };
 
   const handleViewCoverage = () => navigate("/user/dashboard");
-
-  if (isLoading) return <p className="text-center p-6">Loading plans...</p>;
-  if (isError) return <p className="text-center text-red-600 p-6">Failed to load plans.</p>;
 
   if (isSubscribed) {
     return (
@@ -107,8 +97,12 @@ export default function InsurancePage() {
             <p className="text-muted-foreground mb-2">Welcome to {selectedPlan?.name}!</p>
             <p className="text-sm text-muted-foreground mb-6">Your insurance is now active. You'll receive a confirmation email shortly.</p>
             <div className="space-y-3">
-              <Button onClick={handleNewSubscription} variant="outline" className="w-full">Choose Another Plan</Button>
-              <Button className="w-full" onClick={handleViewCoverage}>View My Coverage</Button>
+              <Button onClick={handleNewSubscription} variant="outline" className="w-full">
+                Choose Another Plan
+              </Button>
+              <Button className="w-full" onClick={handleViewCoverage}>
+                View My Coverage
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -123,8 +117,13 @@ export default function InsurancePage() {
           <div className="space-y-4">
             <h2 className="text-xl">Select Your Insurance Plan</h2>
             <div className="space-y-4">
-              {insurancePlans.map(plan => (
-                <PlanCard key={plan.id} plan={plan} isSelected={selectedPlanId === plan.id} onSelect={setSelectedPlanId} />
+              {insurancePlans.map((plan) => (
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  isSelected={selectedPlanId === plan.id}
+                  onSelect={setSelectedPlanId}
+                />
               ))}
             </div>
           </div>
@@ -132,7 +131,7 @@ export default function InsurancePage() {
           {selectedPlanId && (
             <PaymentMethodForm
               onPaymentDataChange={setPaymentData}
-              isValid={isPaymentValid()} // ✅ make sure it's a boolean
+              isValid={isPaymentValid()}
             />
           )}
 
@@ -169,15 +168,15 @@ export default function InsurancePage() {
             >
               {isPending
                 ? "Processing..."
-                : paymentData.method === 'bank'
-                  ? "Confirm Payment"
-                  : "Subscribe Now"}
+                : paymentData.method === "bank"
+                ? "Confirm Payment"
+                : "Subscribe Now"}
             </Button>
 
             {!isFormValid() && selectedPlanId && (
               <p className="text-sm text-muted-foreground text-center mt-2">
                 {!isPaymentValid()
-                  ? paymentData.method === 'card'
+                  ? paymentData.method === "card"
                     ? "Please complete payment information"
                     : "Please confirm your bank transfer"
                   : "Please select a plan"}
