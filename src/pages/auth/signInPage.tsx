@@ -122,7 +122,7 @@ export default function SignIn() {
 
           <Button
             type="submit"
-            className="w-full bg-[#2341AA] text-white py-6 text-lg rounded-lg"
+            className="w-full bg-purple-500 text-white py-6 text-lg rounded-lg"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? "Signing in..." : "Sign in"}

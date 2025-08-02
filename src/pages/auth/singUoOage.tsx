@@ -202,7 +202,7 @@ export default function SignUpPage() {
 
           <Button
             type="submit"
-            className="w-full bg-[#2341AA] text-white py-6 text-lg rounded-lg"
+            className="w-full bg-purple-500 text-white py-6 text-lg rounded-lg"
             disabled={registerMutation.isPending}
           >
             {registerMutation.isPending ? "Signing up..." : "Sign Up"}

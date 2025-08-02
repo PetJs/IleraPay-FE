@@ -30,7 +30,7 @@ const CardComponent: React.FC<CardComponentProps> = ({
           <div className="mt-2">
             <Button
               onClick={onClick}
-              className="flex items-center w-full rounded-4xl bg-[#F28500] cursor-pointer"
+              className="flex items-center w-full rounded-4xl bg-gray-200 cursor-pointer"
             >
               <span className="text-white text-center">View Plans</span>
             </Button>

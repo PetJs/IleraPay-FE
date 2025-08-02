@@ -55,8 +55,6 @@ const useUserStore = create<UserStore>(
           accessToken: null,
           refreshToken: null,
           authorized: false,
-          selectedPlan: null,
-          rememberedCard: null,
         }),
       
     }),

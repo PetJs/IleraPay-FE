@@ -22,7 +22,7 @@ const Dashboard = () => {
           <CardComponent
             title="Wallet"
             description="&#8358;2000"
-            bgColor="bg-[#5D8AA8]"
+            bgColor="bg-purple-500"
             icon={<WalletMinimal />}
             openIcon={<ArrowRightCircle />}
           />
@@ -36,7 +36,7 @@ const Dashboard = () => {
               ? `${selectedPlan.price.toLocaleString()} / ${selectedPlan.period}`
               : "Choose a plan"
           }
-          bgColor="bg-[#FF4F00]"
+          bgColor="bg-gray-300"
           onClick={handleCardClick}
         />
       </div>
