@@ -6,59 +6,58 @@ import { PlanCard } from "@/components/PlanCard";
 import PaymentMethodForm from "@/components/PaymentMethodForm";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import type { PaymentData } from "@/lib/types";
+import type { PaymentData, Plan } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/store/user-store";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { UserService } from "@/services/user-service";
 
-const insurancePlans = [
-  { id: 'basic', name: 'Basic Protection', price: '₦1,000', period: 'week', features: [
-    { text: 'Covers medical emergencies', included: true },
-    { text: '24/7 customer support', included: true },
-    { text: 'Property damage coverage', included: false },
-    { text: 'Family-wide coverage', included: false }
-  ]},
-  { id: 'family', name: 'Family Shield', price: '₦5,000', period: 'month', popular: true, features: [
-    { text: 'Medical + Property damage', included: true },
-    { text: 'Family-wide coverage', included: true },
-    { text: '24/7 customer support', included: true },
-    { text: 'Priority support', included: false }
-  ]},
-  { id: 'premium', name: 'Premium Cover', price: '₦50,000', period: 'year', features: [
-    { text: 'All-inclusive protection', included: true },
-    { text: 'Priority support', included: true },
-    { text: 'Family-wide coverage', included: true },
-    { text: '24/7 customer support', included: true }
-  ]},
-];
-
 export default function InsurancePage() {
+  const navigate = useNavigate();
+  const { setSelectedPlan } = useUserStore();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["insurancePlans"],
+    queryFn: async () => {
+      const res = await UserService.getAllInsurancePlans();
+      return res.data as Plan[]; // 👈 explicitly cast to Plan[]
+    }
+  });
+
+  const insurancePlans = data || [];
+
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [paymentData, setPaymentData] = useState<PaymentData>({
-    method: 'card', cardNumber: '', cardholderName: '', expiryDate: '', cvv: '', rememberCard: false, bankTransferCompleted: false
+    method: 'card',
+    cardNumber: '',
+    cardholderName: '',
+    expiryDate: '',
+    cvv: '',
+    rememberCard: false,
+    bankTransferCompleted: false,
   });
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const selectedPlan = insurancePlans.find(plan => plan.id === selectedPlanId);
-  const { setSelectedPlan } = useUserStore();
-  const navigate = useNavigate();
 
-  const isPaymentValid = () => {
+  const isPaymentValid = (): boolean => {
     if (paymentData.method === 'card') {
-      return paymentData.cardNumber.length >= 15 && paymentData.cardholderName && paymentData.expiryDate.length === 5 && paymentData.cvv.length === 3;
+      return (
+        paymentData.cardNumber.length >= 15 &&
+        !!paymentData.cardholderName &&
+        paymentData.expiryDate.length === 5 &&
+        paymentData.cvv.length === 3
+      );
     } else {
       return paymentData.bankTransferCompleted;
     }
   };
 
-  const isFormValid = () => selectedPlanId !== '' && isPaymentValid();
+  const isFormValid = (): boolean => selectedPlanId !== '' && isPaymentValid();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => UserService.subscribeToPlan({
-      planId: selectedPlanId,
-      payment: paymentData
-    }),
+    mutationFn: () => UserService.subscribeToPlan({ planId: selectedPlanId, payment: paymentData }),
+ // ✅ backend expects just a planId string
     onSuccess: () => {
       if (selectedPlan) {
         setSelectedPlan({ ...selectedPlan, startDate: new Date().toISOString() });
@@ -79,11 +78,22 @@ export default function InsurancePage() {
 
   const handleNewSubscription = () => {
     setSelectedPlanId('');
-    setPaymentData({ method: 'card', cardNumber: '', cardholderName: '', expiryDate: '', cvv: '', rememberCard: false, bankTransferCompleted: false });
+    setPaymentData({
+      method: 'card',
+      cardNumber: '',
+      cardholderName: '',
+      expiryDate: '',
+      cvv: '',
+      rememberCard: false,
+      bankTransferCompleted: false
+    });
     setIsSubscribed(false);
   };
 
   const handleViewCoverage = () => navigate("/user/dashboard");
+
+  if (isLoading) return <p className="text-center p-6">Loading plans...</p>;
+  if (isError) return <p className="text-center text-red-600 p-6">Failed to load plans.</p>;
 
   if (isSubscribed) {
     return (
@@ -120,7 +130,10 @@ export default function InsurancePage() {
           </div>
 
           {selectedPlanId && (
-            <PaymentMethodForm onPaymentDataChange={setPaymentData} isValid={!!isPaymentValid()} />
+            <PaymentMethodForm
+              onPaymentDataChange={setPaymentData}
+              isValid={isPaymentValid()} // ✅ make sure it's a boolean
+            />
           )}
 
           {selectedPlan && (
@@ -149,14 +162,25 @@ export default function InsurancePage() {
           )}
 
           <div className="pb-12">
-            <Button onClick={handleSubscribe} disabled={!isFormValid() || isPending} className="w-full h-12">
-              {isPending ? "Processing..." : paymentData.method === 'bank' ? "Confirm Payment" : "Subscribe Now"}
+            <Button
+              onClick={handleSubscribe}
+              disabled={!isFormValid() || isPending}
+              className="w-full h-12"
+            >
+              {isPending
+                ? "Processing..."
+                : paymentData.method === 'bank'
+                  ? "Confirm Payment"
+                  : "Subscribe Now"}
             </Button>
+
             {!isFormValid() && selectedPlanId && (
               <p className="text-sm text-muted-foreground text-center mt-2">
-                {!isPaymentValid() ? (
-                  paymentData.method === 'card' ? "Please complete payment information" : "Please confirm your bank transfer"
-                ) : "Please select a plan"}
+                {!isPaymentValid()
+                  ? paymentData.method === 'card'
+                    ? "Please complete payment information"
+                    : "Please confirm your bank transfer"
+                  : "Please select a plan"}
               </p>
             )}
           </div>

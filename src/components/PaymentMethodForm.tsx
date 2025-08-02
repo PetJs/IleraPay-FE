@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import useUserStore from "@/store/user-store";
 import { cn } from "@/lib/utils";
@@ -18,7 +23,10 @@ type Props = {
   isValid: boolean;
 };
 
-const PaymentMethodForm: React.FC<Props> = ({ onPaymentDataChange, isValid }) => {
+const PaymentMethodForm: React.FC<Props> = ({
+  onPaymentDataChange,
+  isValid,
+}) => {
   const [selectedMethod, setSelectedMethod] = useState<"card" | "bank">("card");
   const { user, selectedPlan } = useUserStore();
   const navigate = useNavigate();
@@ -63,14 +71,14 @@ const PaymentMethodForm: React.FC<Props> = ({ onPaymentDataChange, isValid }) =>
 
   useEffect(() => {
     onPaymentDataChange({
-  method: selectedMethod,
-  cardNumber: "",
-  cardholderName: "",
-  expiryDate: "",
-  cvv: "",
-  rememberCard: false,
-  bankTransferCompleted: false,
-});
+      method: selectedMethod,
+      cardNumber: "",
+      cardholderName: "",
+      expiryDate: "",
+      cvv: "",
+      rememberCard: false,
+      bankTransferCompleted: false,
+    });
   }, [selectedMethod, onPaymentDataChange]);
 
   return (
@@ -114,6 +122,74 @@ const PaymentMethodForm: React.FC<Props> = ({ onPaymentDataChange, isValid }) =>
               </label>
             </div>
           </RadioGroup>
+
+          {selectedMethod === "card" && (
+            <div className="mt-4 space-y-4">
+              <input
+                type="text"
+                placeholder="Cardholder Name"
+                className="w-full p-2 border rounded-md"
+                onChange={(e) =>
+                  onPaymentDataChange((prev) => ({
+                    ...prev,
+                    cardholderName: e.target.value,
+                  }))
+                }
+              />
+              <input
+                type="text"
+                placeholder="Card Number"
+                className="w-full p-2 border rounded-md"
+                onChange={(e) =>
+                  onPaymentDataChange((prev) => ({
+                    ...prev,
+                    cardNumber: e.target.value,
+                  }))
+                }
+              />
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  className="w-1/2 p-2 border rounded-md"
+                  onChange={(e) =>
+                    onPaymentDataChange((prev) => ({
+                      ...prev,
+                      expiryDate: e.target.value,
+                    }))
+                  }
+                />
+                <input
+                  type="text"
+                  placeholder="CVV"
+                  className="w-1/2 p-2 border rounded-md"
+                  onChange={(e) =>
+                    onPaymentDataChange((prev) => ({
+                      ...prev,
+                      cvv: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedMethod === "bank" && (
+            <div className="mt-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  onChange={(e) =>
+                    onPaymentDataChange((prev) => ({
+                      ...prev,
+                      bankTransferCompleted: e.target.checked,
+                    }))
+                  }
+                />
+                <span>I have completed the bank transfer</span>
+              </label>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           {selectedPlan ? (
@@ -125,7 +201,10 @@ const PaymentMethodForm: React.FC<Props> = ({ onPaymentDataChange, isValid }) =>
               Pay Now for {selectedPlan.name}
             </Button>
           ) : (
-            <Button onClick={() => navigate("/users/dashboard")} className="w-full">
+            <Button
+              onClick={() => navigate("/users/dashboard")}
+              className="w-full"
+            >
               View My Coverage
             </Button>
           )}
