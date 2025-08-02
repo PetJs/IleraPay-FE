@@ -14,9 +14,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import useUserStore from "@/store/user-store";
 import { cn } from "@/lib/utils";
 import { CreditCard, Wallet } from "lucide-react";
-import { UserService } from "@/services/user-service";
 import { useNavigate } from "react-router-dom";
 import type { PaymentData } from "@/lib/types";
+
+// 👉 import mock plans
+import { mockPlans } from "@/mock/mock";
 
 type Props = {
   onPaymentDataChange: React.Dispatch<React.SetStateAction<PaymentData>>;
@@ -28,8 +30,11 @@ const PaymentMethodForm: React.FC<Props> = ({
   isValid,
 }) => {
   const [selectedMethod, setSelectedMethod] = useState<"card" | "bank">("card");
-  const { user, selectedPlan } = useUserStore();
+  const { user } = useUserStore(); // still using real user
   const navigate = useNavigate();
+
+  // 👉 use first mock plan (or choose any logic)
+  const selectedPlan = mockPlans[0];
 
   const { register, handleSubmit, setValue } = useForm({
     mode: "onChange",
@@ -44,25 +49,12 @@ const PaymentMethodForm: React.FC<Props> = ({
       return;
     }
 
-    try {
-      const res = await UserService.initializePayment({
-        amount: (selectedPlan.amount ?? 0) * 100,
-        email: user.email,
-        metadata: {
-          planId: selectedPlan.id,
-          userId: user.id,
-        },
-      });
-
-      if (res?.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
-      } else {
-        toast.error("Failed to initialize payment.");
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("An error occurred while processing payment.");
-    }
+    // ✅ Mock handling of payment
+    toast.success(`Simulating payment for plan: ${selectedPlan.name}`);
+    setTimeout(() => {
+      toast.success("Payment successful!");
+      navigate("/users/dashboard");
+    }, 1500);
   };
 
   useEffect(() => {
