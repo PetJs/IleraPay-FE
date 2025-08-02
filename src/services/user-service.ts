@@ -43,7 +43,7 @@ static async subscribeToPlan(payload: { planId: string; payment: PaymentData }):
   ): Promise<ApiResponse<null>> {
     try {
       console.log("=== SUBMIT CLAIM ===", data);
-      const response = await publicApi.post("/api/v1/claims", data);
+      const response = await authApi.post("/api/v1/claims", data);
       console.log("Claim response:", response.data);
       return response.data;
     } catch (error) {
