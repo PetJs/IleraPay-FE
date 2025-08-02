@@ -40,6 +40,7 @@ export default function SignUpPage() {
     mutationFn: AuthService.registerUser,
     onSuccess: (resp) => {
       setUser({ user: resp.data.user });
+      
       setTokens(resp.data.token, "");
       toast.success("Woo hoo signed up");
       navigate("/");
@@ -75,7 +76,13 @@ export default function SignUpPage() {
     dateOfBirth: string;
     phone: string;
   }) => {
-    registerMutation.mutate(values);
+    registerMutation.mutate({
+      email: values.email,
+      password: values.password,
+      firstName: values.firstname,
+      lastName: values.lastname,
+      phoneNumber: values.phone,
+    });
   };
 
   return (

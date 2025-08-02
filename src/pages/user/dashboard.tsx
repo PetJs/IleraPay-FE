@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 const Dashboard = () => {
   const navigate = useNavigate();
   const selectedPlan = useUserStore((state) => state.selectedPlan);
+  const user = useUserStore((state) => state.user);
 
   const handleCardClick = () => {
     navigate("/users/plans");
@@ -21,7 +22,7 @@ const Dashboard = () => {
         <Link to="/users/wallet">
           <CardComponent
             title="Wallet"
-            description="&#8358;2000"
+            description={`₦${(user?.walletBalance ?? 0).toLocaleString()}`}
             bgColor="bg-purple-500"
             icon={<WalletMinimal />}
             openIcon={<ArrowRightCircle />}

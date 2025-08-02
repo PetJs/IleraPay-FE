@@ -12,6 +12,8 @@ export interface UserStore {
   selectedPlan: Plan | null;
   rememberedCard?: RememberedCard | null;
   setUser: (data: { user: User }) => void;
+  updateWallet: (amount: number) => void;
+
   updateUser: (user: User) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setSelectedPlan: (plan: Plan) => void;
@@ -37,18 +39,28 @@ const useUserStore = create<UserStore>(
       authorized: false,
       selectedPlan: null,
       rememberedCard: null,
+
       setRememberedCard: (card: RememberedCard | null) => set({ rememberedCard: card }),
+
+      // ✅ Modified here:
       setUser: ({ user }: { user: User }) =>
         set({
-          user,
+          user: { ...user, walletBalance: user.walletBalance ?? 0 },
           authorized: true,
         }),
+
+      updateWallet: (amount: number) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, walletBalance: amount } : null,
+        })),
+
       updateUser: (user) => set({ user }),
+
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken, authorized: true }),
-      setSelectedPlan: (plan) =>
-        set({ selectedPlan: plan }),
-      // Reset the store to initial state
+
+      setSelectedPlan: (plan) => set({ selectedPlan: plan }),
+
       reset: () =>
         set({
           user: null,
@@ -56,7 +68,6 @@ const useUserStore = create<UserStore>(
           refreshToken: null,
           authorized: false,
         }),
-      
     }),
     { name: "userStore" }
   )

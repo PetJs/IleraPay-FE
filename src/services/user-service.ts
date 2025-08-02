@@ -1,8 +1,32 @@
 import { publicApi } from "@/lib/axios";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/store/user-store";
+import type { ApiResponse, ClaimPayload, PaymentInitResponse, PaymentPayload } from "@/lib/types";
 
 export class UserService {
+  static async  initializePayment(
+  payload: PaymentPayload
+): Promise<ApiResponse<PaymentInitResponse>> {
+  const res = await axios.post("/api/v1/payments/initialize", payload);
+  return res.data;
+}
+
+  static async submitClaim(
+    data: ClaimPayload
+  ): Promise<ApiResponse<null>> {
+    try {
+      console.log("=== SUBMIT CLAIM ===", data);
+      const response = await publicApi.post("/api/v1/claims", data);
+      console.log("Claim response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error submitting claim:", error);
+      if (error instanceof AxiosError && error.response) {
+        console.error("Status:", error.response.status, "Data:", error.response.data);
+      }
+      throw error as AxiosError;
+    }
+  }
 
   static async sendChatMessage(message: string): Promise<{ response: string }> {
     console.log("=== SEND CHAT MESSAGE ===");
@@ -33,104 +57,7 @@ export class UserService {
     }
   }
 
-  static async submitClaim(data: {
-    description: string;
-    yourName: string;
-    hospitalToBePaid: string;
-    receipt: File;
-  }): Promise<{ message: string }> {
-    console.log("=== SUBMIT CLAIM ===");
-    console.log("Claim data:", {
-      description: data.description,
-      yourName: data.yourName,
-      hospitalToBePaid: data.hospitalToBePaid,
-      receipt: {
-        name: data.receipt.name,
-        size: data.receipt.size,
-        type: data.receipt.type
-      }
-    });
-    
-    try {
-      const formData = new FormData();
-      formData.append("description", data.description);
-      formData.append("yourName", data.yourName);
-      formData.append("hospitalToBePaid", data.hospitalToBePaid);
-      formData.append("receipt", data.receipt);
-
-      console.log("FormData entries:");
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}:`, { name: value.name, size: value.size, type: value.type });
-        } else {
-          console.log(`${key}:`, value);
-        }
-      }
-
-      console.log("Making POST request to /claims/");
-      const response = await publicApi.post("/claims/", formData);
-      
-      console.log("=== SUBMIT CLAIM SUCCESS ===");
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
-      console.log("API response:", response.data);
-      
-      return response.data;
-    } catch (error) {
-      console.error("=== SUBMIT CLAIM ERROR ===");
-      console.error("Error submitting claim:", error);
-      
-      if (error instanceof AxiosError) {
-        console.error("Axios error details:", {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          config: {
-            url: error.config?.url,
-            method: error.config?.method,
-            headers: error.config?.headers,
-            timeout: error.config?.timeout
-          },
-          request: error.request ? "Request was made" : "No request made"
-        });
-        
-        // Network error
-        if (!error.response) {
-          console.error("Network Error - No response received");
-          console.error("Possible causes: CORS, network connectivity, server down");
-        }
-        
-        // HTTP error codes
-        if (error.response?.status) {
-          switch (error.response.status) {
-            case 400:
-              console.error("Bad Request - Check form data format");
-              break;
-            case 401:
-              console.error("Unauthorized - Check authentication");
-              break;
-            case 403:
-              console.error("Forbidden - Check permissions");
-              break;
-            case 404:
-              console.error("Not Found - Check API endpoint URL");
-              break;
-            case 413:
-              console.error("Payload Too Large - File might be too big");
-              break;
-            case 500:
-              console.error("Internal Server Error - Backend issue");
-              break;
-            default:
-              console.error(`HTTP ${error.response.status} - Unexpected error`);
-          }
-        }
-      }
-      
-      throw error as AxiosError;
-    }
-  }
-
+  
 
   // ... other methods ...
 

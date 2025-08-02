@@ -1,13 +1,18 @@
 import { publicApi } from "@/lib/axios";
-import type { ApiResponse, AuthCredentials, AuthUser, User } from "@/lib/types";
+import type { ApiResponse, AuthCredentials, AuthUser } from "@/lib/types";
 import { AxiosError } from "axios";
 
 export class AuthService {
-  static async registerUser(
-    user: Omit<User, "id" | "last_login" | "date_created" | "address">
-  ): Promise<ApiResponse<AuthUser>> {
+  /** Register a new user */
+  static async registerUser(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+  }): Promise<ApiResponse<AuthUser>> {
     try {
-      const response = await publicApi.post("/users/", user);
+      const response = await publicApi.post("/api/v1/auth/register", data);
       return response.data;
     } catch (error) {
       console.error("Error registering user:", error);
@@ -15,9 +20,13 @@ export class AuthService {
     }
   }
 
+  /** Log in an existing user */
   static async loginUser(req: AuthCredentials): Promise<ApiResponse<AuthUser>> {
     try {
-      const response = await publicApi.post("login/", req);
+      const response = await publicApi.post("/api/v1/auth/login", {
+        email: req.email,
+        password: req.password,
+      });
       return response.data;
     } catch (error) {
       console.error("Error logging in:", error);
@@ -25,14 +34,16 @@ export class AuthService {
     }
   }
 
-  static async loginAdmin(
-    req: AuthCredentials
-  ): Promise<ApiResponse<AuthUser>> {
+  /** (Optional) Admin login, if your API supports it */
+  static async loginAdmin(req: AuthCredentials): Promise<ApiResponse<AuthUser>> {
     try {
-      const response = await publicApi.post("/admin/login/", req);
+      const response = await publicApi.post("/api/v1/auth/admin/login", {
+        email: req.email,
+        password: req.password,
+      });
       return response.data;
     } catch (error) {
-      console.error("Error logging in:", error);
+      console.error("Error logging in as admin:", error);
       throw error as AxiosError;
     }
   }

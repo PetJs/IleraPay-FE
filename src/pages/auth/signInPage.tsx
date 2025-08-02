@@ -62,7 +62,7 @@ export default function SignIn() {
   return (
     <div className="w-full overflow-y-auto p-4 bg-white rounded-t-2xl shadow-md">
       <h1 className="text-xl font-bold text-gray-700 text-center mb-6">
-        Ilera-Pay
+        Nasure
       </h1>
 
       <Form {...form}>

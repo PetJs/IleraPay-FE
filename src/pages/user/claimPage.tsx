@@ -1,9 +1,11 @@
+// src/pages/ClaimPage.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { scanReceipt } from "@/lib/receiptScanner";
 import { UserService } from "@/services/user-service";
+import type { ApiResponse, ClaimPayload } from "@/lib/types";
 import {
   Form,
   FormField,
@@ -15,260 +17,187 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { FileUpload } from "@/components/FileUpload";
-import { CheckCircle, CircleX } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
 const claimSchema = z.object({
+  type: z.enum(["medical", "dental", "vision"]),
+  title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  yourName: z.string().min(1, "Name is required"),
-  hospitalToBePaid: z.string().min(1, "Hospital name is required"),
   receipt: z
     .any()
-    .refine((file) => file instanceof File, { message: "Receipt is required" }),
+    .refine((file) => file instanceof File, "Receipt is required"),
 });
-
 type ClaimFormValues = z.infer<typeof claimSchema>;
 
 export default function ClaimPage() {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const form = useForm<ClaimFormValues>({
     resolver: zodResolver(claimSchema),
     defaultValues: {
+      type: "medical",
+      title: "",
       description: "",
-      yourName: "",
-      hospitalToBePaid: "",
       receipt: undefined,
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: UserService.submitClaim,
+  const { mutate, isPending } = useMutation<ApiResponse<null>, Error, ClaimPayload>({
+    mutationFn: (payload) => UserService.submitClaim(payload),
     onSuccess: () => {
-      setIsSubmitted(true);
-      toast.success("Claim submitted successfully!");
+      toast.success("Claim submitted!");
+      setSubmitted(true);
     },
-    onError: (error) => {
-      console.error("Mutation error:", error);
-      toast.error("Failed to submit claim. Please try again.");
-    },
+    onError: () => void toast.error("Submit failed"),
   });
 
-  const handleFileChange = async (file: File | null) => {
-    if (!file) return;
+  const uploadReceipt = (file: File): Promise<string> =>
+    Promise.resolve(URL.createObjectURL(file));
 
-    form.setValue("receipt", file);
-
+  const onSubmit = async (vals: ClaimFormValues) => {
+    setProcessing(true);
     try {
-      const { hospitalName, patientId, amount } = await scanReceipt(file);
+      const { amount, hospitalName, patientId } = await scanReceipt(vals.receipt as File);
 
-      if (hospitalName) {
-        form.setValue("hospitalToBePaid", hospitalName);
-      }
-
-      if (patientId) {
-        form.setValue("yourName", patientId); // assuming patient ID is used as name — adjust if needed
-      }
-
-      if (amount !== null) {
-        form.setValue(
-          "description",
-          `Amount billed: ${amount.toLocaleString()}`
-        );
-      }
-
-      toast.success("Receipt scanned. Please review and submit.");
-    } catch (error) {
-      console.error("Error running OCR:", error);
-      toast.error("Failed to scan receipt. Please try a clearer image.");
-    }
-  };
-
-  const onSubmit = async (values: ClaimFormValues) => {
-    setIsProcessing(true);
-    console.log("=== FORM SUBMISSION START ===", values);
-
-    try {
-      // 1️⃣ OCR + Extract
-      const file = values.receipt as File;
-      console.log("Starting OCR for file:", file.name);
-      const { hospitalName, patientId, amount } = await scanReceipt(file);
-      console.log("OCR completed:", { hospitalName, patientId, amount });
-
-      if (!hospitalName || !patientId || amount == null) {
-        toast.error("Could not parse receipt. Please upload a clearer copy.");
+      if (amount == null) {
+        toast.error("Couldn’t parse amount from receipt");
         return;
       }
 
-      // 2️⃣ Backend validation
-      console.log("Calling validateReceipt with:", {
-        hospitalName,
-        patientId,
-        amount,
-      });
-      const { valid, reason } = await UserService.validateReceipt({
-        hospitalName,
-        patientId,
-        amount,
-      });
+      const receiptUrl = await uploadReceipt(vals.receipt as File);
 
-      if (!valid) {
-        toast.error(`Receipt validation failed: ${reason || "Unknown error"}`);
-        return;
-      }
-      toast.success("Receipt validated! Submitting your claim…");
+      const title = hospitalName
+        ? `${hospitalName} Claim`
+        : vals.title || "Health Claim";
 
-      // 3️⃣ Submit claim
-      console.log("Calling mutation.mutate with:", values);
-      mutation.mutate(values);
+      const description = patientId
+        ? `Claim for patient ID ${patientId}`
+        : vals.description || "Automatically generated claim.";
+
+      const payload: ClaimPayload = {
+        type: vals.type,
+        title,
+        description,
+        amount,
+        receiptUrl,
+        documents: [],
+      };
+
+      mutate(payload);
     } catch (err) {
-      console.error("Error in onSubmit:", err);
-      toast.error("An error occurred during processing. Please try again.");
+      console.error(err);
+      toast.error("An error occurred. Please try again.");
     } finally {
-      setIsProcessing(false);
+      setProcessing(false);
     }
   };
 
-  const handleNewClaim = () => {
+  const handleNew = () => {
     form.reset();
-    setIsSubmitted(false);
+    setSubmitted(false);
   };
 
-  if (isSubmitted) {
+  if (submitted) {
     return (
-      <div className="min-h-screen bg-background max-w-md mx-auto flex items-center justify-center p-4">
-        <Card className="w-full bg-white">
-          <CardContent className="p-6 text-center relative">
-            <CircleX
-              className="absolute right-4 top-0 text-purple-500 cursor-pointer"
-              onClick={handleNewClaim}
-            />
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="mb-2">Claim Submitted!</h2>
-            <p className="text-muted-foreground mb-6">
-              Your claim has been submitted successfully. You’ll receive a
-              confirmation email shortly.
-            </p>
-            <Button onClick={handleNewClaim} className="w-full bg-purple-500">
-              Submit Another Claim
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="p-8 text-center">
+        <h2 className="text-xl mb-4">✅ Your claim is in!</h2>
+        <Button onClick={handleNew}>Submit Another</Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-md mx-auto pt-12 pb-14">
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-xl">Claim Information</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Please fill in all required fields to submit your claim.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
-                  {/* Description */}
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Describe your claim..."
-                            className="resize-none min-h-[100px]"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-600" />
-                      </FormItem>
-                    )}
-                  />
+    <div className="max-w-md mx-auto p-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="medical">Medical</SelectItem>
+                      <SelectItem value="dental">Dental</SelectItem>
+                      <SelectItem value="vision">Vision</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                  {/* Your Name */}
-                  <FormField
-                    control={form.control}
-                    name="yourName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Your Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Enter your full name"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-600" />
-                      </FormItem>
-                    )}
-                  />
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Claim title" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                  {/* Hospital to be Paid */}
-                  <FormField
-                    control={form.control}
-                    name="hospitalToBePaid"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hospital to be Paid</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter hospital name" />
-                        </FormControl>
-                        <FormMessage className="text-red-600" />
-                      </FormItem>
-                    )}
-                  />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Describe your claim" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                  {/* Receipt Upload */}
-                  <FormField
-                    control={form.control}
-                    name="receipt"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Upload Receipt</FormLabel>
-                        <FormControl>
-                          <FileUpload
-                            label="Choose receipt file"
-                            onFileChange={handleFileChange}
-                            accept="image/*"
-                          />
-                        </FormControl>
-                        <FormMessage className="text-red-600" />
-                      </FormItem>
-                    )}
+          <FormField
+            control={form.control}
+            name="receipt"
+            render={() => (
+              <FormItem>
+                <FormLabel>Receipt</FormLabel>
+                <FormControl>
+                  <FileUpload
+                    label="Upload receipt"
+                    accept="image/*"
+                    onFileChange={(f) => form.setValue("receipt", f)}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    className="w-full bg-purple-500"
-                    disabled={isProcessing || mutation.isPending}
-                  >
-                    {isProcessing || mutation.isPending
-                      ? "Processing..."
-                      : "Submit Claim"}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-      </ScrollArea>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={processing || isPending}
+          >
+            {processing || isPending ? "Submitting…" : "Submit Claim"}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }

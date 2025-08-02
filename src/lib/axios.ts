@@ -1,19 +1,16 @@
-// src/lib/axios.ts
 import axios from "axios";
-import { SERVER_URL } from "@/lib/constant";
 import useUserStore from "@/store/user-store";
 
-const API_KEY = import.meta.env.VITE_REQRES_API_KEY; 
+// Automatically read from Vite's env variable (defined in .env file)
+const SERVER_URL = import.meta.env.VITE_APP_SERVER_URL;
 
-// console.log("❯ SERVER_URL:", SERVER_URL);
-// console.log("❯ API_KEY:", API_KEY);
+console.log("❯ SERVER_URL:", SERVER_URL);
 
 export const publicApi = axios.create({
-  baseURL: SERVER_URL,   // e.g. "https://api.reqres.in/v2"
+  baseURL: SERVER_URL,   // Should resolve to "https://nasure.onrender.com/"
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
-    ...(API_KEY ? { "x-api-key": API_KEY } : {}),
   },
 });
 
@@ -22,11 +19,12 @@ export const authApi = axios.create({
   timeout: 60000,
 });
 
+// Add Authorization token dynamically for authenticated endpoints
 authApi.interceptors.request.use(
   (config) => {
     const token = useUserStore.getState().accessToken;
     if (token) {
-      config.headers.Authorization = `Token ${token}`;
+      config.headers.Authorization = `Token ${token}`;  // Use 'Bearer' if backend expects that
     }
     return config;
   },

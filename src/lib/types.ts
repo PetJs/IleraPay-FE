@@ -15,6 +15,7 @@ export type User = {
   address: string;
   date_created: Date;
   avatar?: string;
+  walletBalance: number;
 };
 
 export type AuthCredentials = {
@@ -64,6 +65,7 @@ interface PlanFeature {
 }
 
 export interface Plan {
+  amount: number;
   id: string;
   name: string;
   price: string;
@@ -84,4 +86,26 @@ export interface RememberedCard {
   cardNumber: string;
   cardholderName: string;
   expiryDate: string;
+}
+
+export interface ClaimPayload {
+  type: "medical" | "dental" | "vision";
+  title: string;
+  description: string;
+  amount: number;
+  receiptUrl: string;
+  documents: string[];
+}
+
+
+export interface PaymentPayload {
+  amount: number;
+  email: string;
+  metadata?: Record<string, any>;
+}
+
+export interface PaymentInitResponse {
+  authorization_url: string;
+  access_code: string;
+  reference: string;
 }

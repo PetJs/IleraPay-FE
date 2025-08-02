@@ -2,22 +2,47 @@ import { useState } from "react";
 import Inspo from "../../assets/images/inspo-removebg-preview.png";
 import TransactionHistory from "./TransactionPage";
 import ClaimsMade from "./ClaimsPage";
-
+import useUserStore from "@/store/user-store";
+import { UserService } from "@/services/user-service";
 
 const Wallet = () => {
-  // track which tab is active
   const [activeTab, setActiveTab] = useState<"history" | "claims">("history");
+  const user = useUserStore((state) => state.user);
+
+  const onTopUpClick = async () => {
+    if (!user?.email) return alert("User email is missing");
+
+    try {
+      const res = await UserService.initializePayment({
+        amount: 10000, // Replace with user input if dynamic
+        email: user.email,
+        metadata: {},
+      });
+
+      if (res?.data?.authorization_url) {
+        window.location.href = res.data.authorization_url; // Redirect to Paystack
+      } else {
+        alert("Failed to initialize payment");
+      }
+    } catch (err) {
+      console.error("Payment Error:", err);
+      alert("Something went wrong initializing payment.");
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col">
       {/* Top wallet header */}
       <div className="bg-purple-500 h-[40vh] flex p-2 pt-14">
         <div className="w-1/2 h-full space-y-2">
-          <p>Hi Abdul</p>
+          <p>Hi {user?.firstname || "User"}</p>
           <p className="text-3xl font-extrabold text-white mb-12">
-            &#8358;{(4000).toFixed(2)}
+            &#8358;{user?.walletBalance?.toLocaleString() ?? 0}
           </p>
-          <button className="rounded-4xl px-6 py-2 text-lg bg-purple-300">
+          <button
+            onClick={onTopUpClick}
+            className="rounded-4xl px-6 py-2 text-lg bg-purple-300"
+          >
             Top Up
           </button>
         </div>
