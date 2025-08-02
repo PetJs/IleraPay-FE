@@ -10,13 +10,14 @@ export interface UserStore {
   refreshToken: string | null;
   authorized: boolean;
   selectedPlan: Plan | null;
-  rememberedCard?: RememberedCard | null;
+  rememberedCard: RememberedCard | null;
+
   setUser: (data: { user: User }) => void;
+  updateUser: (user: User) => void;
   updateWallet: (amount: number) => void;
 
-  updateUser: (user: User) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
-  setSelectedPlan: (plan: Plan) => void;
+  setSelectedPlan: (plan: Plan | null) => void;
   setRememberedCard: (card: RememberedCard | null) => void;
 
   reset: () => void;
@@ -31,35 +32,31 @@ const useUserStore = create<UserStore>(
   (persist as MyPersist)(
     (set) => ({
       user: null,
-      currentRole: null,
-      userId: null,
       accessToken: null,
       refreshToken: null,
-      loading: false,
       authorized: false,
       selectedPlan: null,
       rememberedCard: null,
 
-      setRememberedCard: (card: RememberedCard | null) => set({ rememberedCard: card }),
-
-      // ✅ Modified here:
-      setUser: ({ user }: { user: User }) =>
+      setUser: ({ user }) =>
         set({
           user: { ...user, walletBalance: user.walletBalance ?? 0 },
           authorized: true,
         }),
+
+      updateUser: (user) => set({ user }),
 
       updateWallet: (amount: number) =>
         set((state) => ({
           user: state.user ? { ...state.user, walletBalance: amount } : null,
         })),
 
-      updateUser: (user) => set({ user }),
-
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken, authorized: true }),
 
       setSelectedPlan: (plan) => set({ selectedPlan: plan }),
+
+      setRememberedCard: (card) => set({ rememberedCard: card }),
 
       reset: () =>
         set({
@@ -67,6 +64,8 @@ const useUserStore = create<UserStore>(
           accessToken: null,
           refreshToken: null,
           authorized: false,
+          selectedPlan: null,
+          rememberedCard: null,
         }),
     }),
     { name: "userStore" }

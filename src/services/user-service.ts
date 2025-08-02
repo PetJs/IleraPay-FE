@@ -1,7 +1,7 @@
 import { publicApi } from "@/lib/axios";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/store/user-store";
-import type { ApiResponse, ClaimPayload, PaymentInitResponse, PaymentPayload } from "@/lib/types";
+import type { ApiResponse, ClaimPayload, PaymentData, PaymentInitResponse, PaymentPayload } from "@/lib/types";
 
 export class UserService {
   static async  initializePayment(
@@ -10,6 +10,33 @@ export class UserService {
   const res = await axios.post("/api/v1/payments/initialize", payload);
   return res.data;
 }
+
+  static async getAllInsurancePlans(): Promise<ApiResponse<any>> {
+  try {
+    const response = await publicApi.get("/api/v1/insurance-plans");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching insurance plans:", error);
+    throw error;
+  }
+}
+
+static async subscribeToPlan(payload: { planId: string; payment: PaymentData }): Promise<ApiResponse<null>> {
+  try {
+    const response = await publicApi.post(
+      `/api/v1/insurance-subscriptions/subscribe/${payload.planId}`,
+      payload.payment
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error subscribing to plan ${payload.planId}:`, error);
+    if (error instanceof AxiosError && error.response) {
+      console.error("Status:", error.response.status, "Data:", error.response.data);
+    }
+    throw error;
+  }
+}
+
 
   static async submitClaim(
     data: ClaimPayload
@@ -65,7 +92,7 @@ export class UserService {
     console.log("=== LOGGING OUT ===");
     try {
       // Optionally inform backend
-      await publicApi.post("/logout"); // <- if your API supports logout
+      await publicApi.post("/api/v1/auth/logout"); // <- if your API supports logout
       console.log("Backend logout successful");
     } catch (error) {
       if (error instanceof AxiosError) {
