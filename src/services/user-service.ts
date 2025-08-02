@@ -44,8 +44,11 @@ static async subscribeToPlan(payload: { planId: string; payment: PaymentData }):
     try {
       console.log("=== SUBMIT CLAIM ===", data);
       const response = await authApi.post("/api/v1/claims", data);
-      console.log("Claim response:", response.data);
-      return response.data;
+      return {
+        status_code: 200,
+        data: response.data,
+        message: "Claim submitted successfully"
+      };
     } catch (error) {
       console.error("Error submitting claim:", error);
       if (error instanceof AxiosError && error.response) {

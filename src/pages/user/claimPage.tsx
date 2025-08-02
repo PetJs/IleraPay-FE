@@ -56,9 +56,15 @@ export default function ClaimPage() {
     mutationFn: (payload) => UserService.submitClaim(payload),
     onSuccess: () => {
       toast.success("Claim submitted!");
-      setSubmitted(true);
+      setTimeout(() => {
+    setSubmitted(true);
+  }, 5000);
     },
-    onError: () => void toast.error("Submit failed"),
+    onError: () => {
+  toast.error("Submit failed");
+  setTimeout(() => {
+    setSubmitted(true);
+  }, 5000);}
   });
 
   const uploadReceipt = (file: File): Promise<string> =>
