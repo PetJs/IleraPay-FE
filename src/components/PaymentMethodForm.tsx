@@ -11,17 +11,19 @@ import { cn } from "@/lib/utils";
 import { CreditCard, Wallet } from "lucide-react";
 import { UserService } from "@/services/user-service";
 import { useNavigate } from "react-router-dom";
+import type { PaymentData } from "@/lib/types";
 
-type FormData = {
-  paymentMethod: "card" | "wallet";
+type Props = {
+  onPaymentDataChange: React.Dispatch<React.SetStateAction<PaymentData>>;
+  isValid: boolean;
 };
 
-const PaymentMethodForm = () => {
-  const [selectedMethod, setSelectedMethod] = useState<"card" | "wallet">("card");
+const PaymentMethodForm: React.FC<Props> = ({ onPaymentDataChange, isValid }) => {
+  const [selectedMethod, setSelectedMethod] = useState<"card" | "bank">("card");
   const { user, selectedPlan } = useUserStore();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, setValue } = useForm<FormData>({
+  const { register, handleSubmit, setValue } = useForm({
     mode: "onChange",
     defaultValues: {
       paymentMethod: "card",
@@ -36,7 +38,7 @@ const PaymentMethodForm = () => {
 
     try {
       const res = await UserService.initializePayment({
-        amount: selectedPlan.amount * 100,
+        amount: (selectedPlan.amount ?? 0) * 100,
         email: user.email,
         metadata: {
           planId: selectedPlan.id,
@@ -59,6 +61,18 @@ const PaymentMethodForm = () => {
     register("paymentMethod", { required: true });
   }, [register]);
 
+  useEffect(() => {
+    onPaymentDataChange({
+  method: selectedMethod,
+  cardNumber: "",
+  cardholderName: "",
+  expiryDate: "",
+  cvv: "",
+  rememberCard: false,
+  bankTransferCompleted: false,
+});
+  }, [selectedMethod, onPaymentDataChange]);
+
   return (
     <form onSubmit={handleSubmit(() => {})}>
       <Card className="w-full">
@@ -67,7 +81,7 @@ const PaymentMethodForm = () => {
         </CardHeader>
         <CardContent>
           <RadioGroup
-            onValueChange={(value: "card" | "wallet") => {
+            onValueChange={(value: "card" | "bank") => {
               setSelectedMethod(value);
               setValue("paymentMethod", value);
             }}
@@ -90,11 +104,11 @@ const PaymentMethodForm = () => {
             <div
               className={cn(
                 "flex items-center space-x-2 border p-4 rounded-md",
-                selectedMethod === "wallet" && "ring-2 ring-purple-500"
+                selectedMethod === "bank" && "ring-2 ring-purple-500"
               )}
             >
-              <RadioGroupItem value="wallet" id="wallet" />
-              <label htmlFor="wallet" className="flex items-center space-x-2">
+              <RadioGroupItem value="bank" id="bank" />
+              <label htmlFor="bank" className="flex items-center space-x-2">
                 <Wallet className="w-5 h-5" />
                 <span>Pay with Wallet</span>
               </label>
@@ -105,6 +119,7 @@ const PaymentMethodForm = () => {
           {selectedPlan ? (
             <Button
               onClick={handlePlanPayment}
+              disabled={!isValid}
               className="w-full bg-purple-600 text-white"
             >
               Pay Now for {selectedPlan.name}

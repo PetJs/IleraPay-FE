@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlanCard } from "@/components/PlanCard";
-import { PaymentMethodForm } from "@/components/PaymentMethodForm";
+import PaymentMethodForm from "@/components/PaymentMethodForm";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { PaymentData } from "@/lib/types";

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { Upload, X, FileText, Image } from "lucide-react";
+import { Upload, X, FileText } from "lucide-react";
 
 interface FileUploadProps {
   onFileChange: (file: File | null) => void;

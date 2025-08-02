@@ -65,7 +65,7 @@ interface PlanFeature {
 }
 
 export interface Plan {
-  amount: number;
+  amount?: number;
   id: string;
   name: string;
   price: string;
