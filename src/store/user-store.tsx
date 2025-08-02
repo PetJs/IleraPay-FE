@@ -12,7 +12,7 @@ export interface UserStore {
   selectedPlan: Plan | null;
   rememberedCard: RememberedCard | null;
 
-  setUser: (data: { user: User }) => void;
+  setUser: (user: User) => void;
   updateUser: (user: User) => void;
   updateWallet: (amount: number) => void;
 
@@ -38,11 +38,11 @@ const useUserStore = create<UserStore>(
       selectedPlan: null,
       rememberedCard: null,
 
-      setUser: ({ user }) =>
-        set({
-          user: { ...user, walletBalance: user.walletBalance ?? 0 },
-          authorized: true,
-        }),
+      setUser: (user) =>
+  set({
+    user: { ...user, walletBalance: user.walletBalance ?? 0 },
+    authorized: true,
+  }),
 
       updateUser: (user) => set({ user }),
 

@@ -2,20 +2,7 @@ export type ApiResponse<T> = {
   status_code: number;
   message: string;
   data: T;
-  token?: string;
-};
-
-export type User = {
-  id: number;
-  last_login: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  phone: string;
-  address: string;
-  date_created: Date;
-  avatar?: string;
-  walletBalance: number;
+  token?: string; // optional for login/signup responses
 };
 
 export type AuthCredentials = {
@@ -23,10 +10,42 @@ export type AuthCredentials = {
   password: string;
 };
 
-export type AuthUser = {
-  user: User;
-  token: string;
+export type User = {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  // Add this if not already there
+  walletBalance?: number;
 };
+
+
+export interface AuthUser {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  role: string;
+  // ...add any other fields returned in user
+}
+
+export interface Wallet {
+  id: string;
+  balance: number;
+  currency: string;
+}
+
+export interface LoginResponse {
+  user: AuthUser;
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
+  wallet: Wallet;
+}
+
 
 export interface CardComponentProps {
   title?: string;
@@ -49,37 +68,13 @@ export interface TransactionListProps {
 }
 
 export interface PaymentData {
-  method: 'card' | 'bank';
+  method: "card" | "bank";
   cardNumber: string;
   cardholderName: string;
   expiryDate: string;
   cvv: string;
   rememberCard: boolean;
   bankTransferCompleted: boolean;
-}
-
-
-interface PlanFeature {
-  text: string;
-  included: boolean;
-}
-
-export interface Plan {
-  amount?: number;
-  id: string;
-  name: string;
-  price: string;
-  period: string;
-  features: PlanFeature[];
-  popular?: boolean;
-  startDate?: string;
-}
-
-
-export interface PlanCardProps {
-  plan: Plan;
-  isSelected: boolean;
-  onSelect: (planId: string) => void;
 }
 
 export interface RememberedCard {
@@ -97,6 +92,28 @@ export interface ClaimPayload {
   documents: string[];
 }
 
+export interface PlanFeature {
+  text: string;
+  included: boolean;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  amount?: number;
+  price: string;
+  period: string;
+  features: PlanFeature[];
+  popular?: boolean;
+  startDate?: string;
+  category?: string;
+}
+
+export interface PlanCardProps {
+  plan: Plan;
+  isSelected: boolean;
+  onSelect: (planId: string) => void;
+}
 
 export interface PaymentPayload {
   amount: number;

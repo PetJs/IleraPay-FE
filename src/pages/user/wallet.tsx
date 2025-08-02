@@ -35,7 +35,7 @@ const Wallet = () => {
       {/* Top wallet header */}
       <div className="bg-purple-500 h-[40vh] flex p-2 pt-14">
         <div className="w-1/2 h-full space-y-2">
-          <p>Hi {user?.firstname || "User"}</p>
+          <p>Hi {user?.firstName || "User"}</p>
           <p className="text-3xl font-extrabold text-white mb-12">
             &#8358;{user?.walletBalance?.toLocaleString() ?? 0}
           </p>

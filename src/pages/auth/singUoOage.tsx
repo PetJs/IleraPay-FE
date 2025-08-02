@@ -34,14 +34,14 @@ const signUpSchema = z.object({
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { setUser, setTokens } = useUserStore();
+  const { setTokens } = useUserStore();
 
   const registerMutation = useMutation({
     mutationFn: AuthService.registerUser,
     onSuccess: (resp) => {
-      setUser({ user: resp.data.user });
+      useUserStore.getState().setUser(resp.data.user);
       
-      setTokens(resp.data.token, "");
+      setTokens(resp.data.tokens.accessToken, "");
       toast.success("Woo hoo signed up");
       navigate("/");
     },

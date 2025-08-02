@@ -1,7 +1,7 @@
-import { publicApi } from "@/lib/axios";
+import { authApi, publicApi } from "@/lib/axios";
 import axios, { AxiosError } from "axios";
 import useUserStore from "@/store/user-store";
-import type { ApiResponse, ClaimPayload, PaymentData, PaymentInitResponse, PaymentPayload } from "@/lib/types";
+import type { ApiResponse, ClaimPayload, PaymentData, PaymentInitResponse, PaymentPayload, User } from "@/lib/types";
 
 export class UserService {
   static async  initializePayment(
@@ -23,7 +23,7 @@ export class UserService {
 
 static async subscribeToPlan(payload: { planId: string; payment: PaymentData }): Promise<ApiResponse<null>> {
   try {
-    const response = await publicApi.post(
+    const response = await authApi.post(
       `/api/v1/insurance-subscriptions/subscribe/${payload.planId}`,
       payload.payment
     );
@@ -84,6 +84,16 @@ static async subscribeToPlan(payload: { planId: string; payment: PaymentData }):
     }
   }
 
+  static async getProfile(): Promise<ApiResponse<{ user: User; wallet: any }>> {
+    try {
+      const response = await authApi.get('/api/v1/users/profile');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      throw error;
+    }
+  }
+
   
 
   // ... other methods ...
@@ -92,7 +102,7 @@ static async subscribeToPlan(payload: { planId: string; payment: PaymentData }):
     console.log("=== LOGGING OUT ===");
     try {
       // Optionally inform backend
-      await publicApi.post("/api/v1/auth/logout"); // <- if your API supports logout
+      await authApi.post("/api/v1/auth/logout"); // <- if your API supports logout
       console.log("Backend logout successful");
     } catch (error) {
       if (error instanceof AxiosError) {

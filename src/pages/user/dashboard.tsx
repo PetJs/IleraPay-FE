@@ -1,15 +1,33 @@
 import CardComponent from "@/components/card/card";
 import { WalletMinimal, ArrowRightCircle, Clock, Eye, FileText, Gift, Plus, RefreshCw, Shield, ShoppingCart } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, } from "react-router-dom";
 import useUserStore from "@/store/user-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { publicApi } from "@/lib/axios";
+import { useEffect } from "react";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  const setSelectedPlan = useUserStore((state) => state.setSelectedPlan);
   const selectedPlan = useUserStore((state) => state.selectedPlan);
   const user = useUserStore((state) => state.user);
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchPlan = async () => {
+      try {
+        const res = await publicApi.get("/api/v1/plan/user");
+        setSelectedPlan(res.data.data); // Adjust if shape differs
+      } catch (err) {
+        console.error("Failed to fetch selected plan", err);
+      }
+    };
+
+    if (!selectedPlan) {
+      fetchPlan();
+    }
+  }, [selectedPlan, setSelectedPlan]);
 
   const handleCardClick = () => {
     navigate("/users/plans");
@@ -155,19 +173,19 @@ const Dashboard = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-purple-700">
                   <Gift size={20} />
-                  Referral Promo
+                 CashBack
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-center">
-                  <p className="text-2xl text-purple-700 mb-1">$50</p>
-                  <p className="text-sm text-gray-600 mb-3">For each referral</p>
+                  <p className="text-2xl text-purple-700 mb-1">&#8358;0</p>
+                  <p className="text-sm text-gray-600 mb-3">For every money kept. you get 15% cashback</p>
                   <Badge className="bg-purple-600 text-white hover:bg-purple-700 mb-3">
-                    Limited Time
+                    Every 3 months
                   </Badge>
                 </div>
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" size="sm">
-                  Refer Friends
+                  View CashBack
                 </Button>
               </CardContent>
             </Card>

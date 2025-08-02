@@ -1,16 +1,15 @@
 import { publicApi } from "@/lib/axios";
-import type { ApiResponse, AuthCredentials, AuthUser } from "@/lib/types";
+import type { ApiResponse, AuthCredentials, LoginResponse } from "@/lib/types";
 import { AxiosError } from "axios";
 
 export class AuthService {
-  /** Register a new user */
   static async registerUser(data: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
     phoneNumber: string;
-  }): Promise<ApiResponse<AuthUser>> {
+  }): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await publicApi.post("/api/v1/auth/register", data);
       return response.data;
@@ -20,8 +19,7 @@ export class AuthService {
     }
   }
 
-  /** Log in an existing user */
-  static async loginUser(req: AuthCredentials): Promise<ApiResponse<AuthUser>> {
+  static async loginUser(req: AuthCredentials): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await publicApi.post("/api/v1/auth/login", {
         email: req.email,
@@ -34,8 +32,7 @@ export class AuthService {
     }
   }
 
-  /** (Optional) Admin login, if your API supports it */
-  static async loginAdmin(req: AuthCredentials): Promise<ApiResponse<AuthUser>> {
+  static async loginAdmin(req: AuthCredentials): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await publicApi.post("/api/v1/auth/admin/login", {
         email: req.email,
