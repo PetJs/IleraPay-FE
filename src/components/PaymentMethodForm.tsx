@@ -53,7 +53,7 @@ const PaymentMethodForm: React.FC<Props> = ({
     toast.success(`Simulating payment for plan: ${selectedPlan.name}`);
     setTimeout(() => {
       toast.success("Payment successful!");
-      navigate("/users/dashboard");
+      navigate("/user/dashboard");
     }, 1500);
   };
 
@@ -194,7 +194,7 @@ const PaymentMethodForm: React.FC<Props> = ({
             </Button>
           ) : (
             <Button
-              onClick={() => navigate("/users/dashboard")}
+              onClick={() => navigate("/user/dashboard")}
               className="w-full"
             >
               View My Coverage
